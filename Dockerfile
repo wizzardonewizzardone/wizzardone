@@ -30,6 +30,7 @@ FROM debian:stable-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
+    bash \
     libhwloc15 hwloc \
     libuv1 \
     libssl3 \
@@ -70,17 +71,34 @@ else
   echo "[xmrig] MSR devices NOT found; MSR mod will likely fail."
 fi
 
+# Build optional flags safely
+TLS_FLAG=""
+if [[ "${XMRIG_TLS}" == "1" ]]; then
+  TLS_FLAG="--tls"
+fi
+
+THREADS_FLAG=""
+if [[ "${XMRIG_THREADS}" != "auto" && -n "${XMRIG_THREADS}" ]]; then
+  THREADS_FLAG="--threads=${XMRIG_THREADS}"
+fi
+
+AFFINITY_FLAG=""
+if [[ -n "${XMRIG_AFFINITY}" ]]; then
+  AFFINITY_FLAG="--cpu-affinity=${XMRIG_AFFINITY}"
+fi
+
+# ---- launch xmrig ----
 exec /xmrig/xmrig \
   -o "${XMRIG_POOL}" \
   -u "${XMRIG_USER}" \
   -p "${XMRIG_PASS}" \
   --donate-level="${XMRIG_DONATE}" \
-  $( [[ "${XMRIG_TLS}" == "1" ]] && echo "--tls" ) \
+  ${TLS_FLAG} \
   --huge-pages \
   --randomx-1gb-pages \
   --randomx-wrmsr=1 \
-  --threads="${XMRIG_THREADS}" \
-  --cpu-affinity="${XMRIG_AFFINITY}"
+  ${THREADS_FLAG} \
+  ${AFFINITY_FLAG}
 EOF
 
 RUN chmod +x /entrypoint.sh
