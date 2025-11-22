@@ -6,13 +6,22 @@ FROM debian:stable-slim AS build
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates git build-essential cmake automake libtool pkg-config \
     hwloc libhwloc-dev \
+    libuv1-dev \
+    libssl-dev \
+    libmicrohttpd-dev \
+    libjansson-dev \
+    libzstd-dev \
+    libpci-dev \
+    libhidapi-dev \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
-RUN git clone https://github.com/xmrig/xmrig.git .
-RUN mkdir build && cd build \
+RUN git clone --depth=1 https://github.com/xmrig/xmrig.git .
+
+RUN mkdir -p build && cd build \
  && cmake .. -DWITH_HWLOC=ON -DCMAKE_BUILD_TYPE=Release \
  && make -j"$(nproc)"
+
 
 # ---------------------------
 # Runtime stage
@@ -20,7 +29,16 @@ RUN mkdir build && cd build \
 FROM debian:stable-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates libhwloc15 msr-tools util-linux procps kmod \
+    ca-certificates \
+    libhwloc15 hwloc \
+    libuv1 \
+    libssl3 \
+    libmicrohttpd12 \
+    libjansson4 \
+    libzstd1 \
+    libpci3 \
+    libhidapi-hidraw0 \
+    msr-tools util-linux procps kmod \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /xmrig
@@ -41,7 +59,6 @@ echo "  tls      = ${XMRIG_TLS}"
 echo "  donate   = ${XMRIG_DONATE}"
 
 # ---- hugepages (best-effort; host must allow/reserve) ----
-# 2MB hugepages request
 sysctl -w vm.nr_hugepages="${XMRIG_NR_HUGEPAGES}" >/dev/null 2>&1 || true
 
 # ---- MSR mod (best-effort; host kernel/module must allow) ----
@@ -53,7 +70,6 @@ else
   echo "[xmrig] MSR devices NOT found; MSR mod will likely fail."
 fi
 
-# ---- launch xmrig ----
 exec /xmrig/xmrig \
   -o "${XMRIG_POOL}" \
   -u "${XMRIG_USER}" \
@@ -77,7 +93,6 @@ ENV XMRIG_THREADS="auto"
 ENV XMRIG_AFFINITY="0xFF"
 ENV XMRIG_TLS="1"
 ENV XMRIG_DONATE="0"
-# how many 2MB hugepages to request from inside container
 ENV XMRIG_NR_HUGEPAGES="1280"
 
 ENTRYPOINT ["/entrypoint.sh"]
