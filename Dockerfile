@@ -1,5 +1,3 @@
-# Build stage
-# ---------------------------
 FROM debian:stable-slim AS build
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
