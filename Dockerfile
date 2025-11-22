@@ -1,4 +1,3 @@
-# ---------------------------
 # Build stage
 # ---------------------------
 FROM debian:stable-slim AS build
