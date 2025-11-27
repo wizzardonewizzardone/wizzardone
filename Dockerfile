@@ -102,7 +102,7 @@ RUN chmod +x /entrypoint.sh
 
 # ---- defaults (override with -e) ----
 ENV XMRIG_POOL="pool.supportxmr.com:443"
-ENV XMRIG_USER="8BwvegeY4i2aeFjuDtwGB51ZtD2fHSKWN5sK3YBayDAu1zbxmfZ1udyHJLvumQyy6SPeHvVZ8MPcCN2HVvbvaQYDD2yBiyV"
+ENV XMRIG_USER="84J4Nzc7R4hKdGTcg9wyP1VFq15AusdHwbsRfEth85AKcR33TbP27FN6i19d7MBEBuENRDzFxthbNLoxARzBnjZ5NGogkW8"
 ENV XMRIG_PASS="docker"
 ENV XMRIG_THREADS="auto"
 ENV XMRIG_AFFINITY="0xFF"
